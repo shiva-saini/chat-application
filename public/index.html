@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>
+    Socket.IO Chat Example
+
+  </title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Socket.IO Chat Example</h1>
+  <div>
+    <label for="usernameInput">Username:</label>
+    <input type="text" id="usernameInput" placeholder="Enter your username">
+    <button onclick="register()">Register</button>
+  </div>
+  <div>
+    <input type="text" id="messageInput" placeholder="Type a message" disabled>
+    <button id="send" onclick="sendMessage()" disabled>Send</button>
+  </div>
+  <div id="messages"></div>
+
+  <div id="emojiPicker" style="display: none;">
+    <span onclick="insertEmoji('😀')">😀</span>
+    <span onclick="insertEmoji('😄')">😄</span>
+    <span onclick="insertEmoji('😊')">😊</span>
+    <!-- Add more emoji Unicode characters as needed -->
+  </div>
+
+  <div>
+    <input type="text" id="messageInput" placeholder="Type a message" disabled>
+    <button onclick="toggleEmojiPicker()">😀</button> <!-- Button to open/close emoji picker -->
+    <button onclick="sendMessage()" disabled>Send</button>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let username = '';
+
+    function register() {
+      username = document.getElementById('usernameInput').value.trim();
+      if (username !== '') {
+        document.getElementById('usernameInput').disabled = true;
+        document.getElementById('messageInput').disabled = false;
+        document.getElementById('messageInput').focus();
+        document.getElementById('send').disabled = false;
+        socket.emit('register', username);
+      }
+    }
+
+    socket.on('message', (data) => {
+      appendMessage(data);
+    });
+
+    function sendMessage() {
+      const message = document.getElementById('messageInput').value;
+      if (message.trim() !== '') {
+        socket.emit('message', { message });
+        appendMessage({ username: 'You', message });
+        document.getElementById('messageInput').value = '';
+      }
+    }
+
+    function appendMessage(data) {
+      const messagesDiv = document.getElementById('messages');
+      const messageElement = document.createElement('div');
+      messageElement.innerText = `${data.username}: ${data.message}`;
+      messagesDiv.appendChild(messageElement);
+    }
+
+    function toggleEmojiPicker() {
+      const emojiPicker = document.getElementById('emojiPicker');
+      emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function insertEmoji(emoji) {
+      document.getElementById('messageInput').value += emoji;
+    }
+  </script>
+</body>
+</html>
